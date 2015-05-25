@@ -1,29 +1,21 @@
-canvas = null;
-gfx = null;
-width = 0;
-height = 0;
+ASSET_LIST_LOCATION = 'assets/data/assets.json';
+ASSET_LOCATION = 'assets/';
 
-// This is a safe way of isolating an entry point for your program
+PREFAB_LIST_LOCATION = 'assets/data/prefabs.json';
+
+WALL_WIDTH = 4;
+WALL_LENGTH = 32;
+CELL_SIZE = 32;
+CORNER_SIZE = 4;
+
+assets = {};
+displayManager = null;
+assetManager = null;
+state = null;
+level = null;
+
 window.onload = function(){
-	canvas = document.getElementById('canvas');
-	gfx = canvas.getContext('2d');
-	width = canvas.width = window.innerWidth;
-	height = canvas.height = window.innerHeight;
+	switchState(STATES.INITIALIZING);
 	requestAnimationFrame(frame);
 };
 
-
-/*
-
-
-*/
-
-function update(dt) {
-	
-}
-
-function redraw(dt) {
-	gfx.clearRect(0,0,width,height);
-
-
-}

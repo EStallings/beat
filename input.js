@@ -49,6 +49,10 @@ INPUT.mouse = {
 	'SCROLL':0
 };
 
+//Should be called last in updates
+INPUT.update = function(dt) {
+	this.mouse.SCROLL = 0;
+}
 var fn_keys = function(e){
 	INPUT.keys['ALT'] = e.altKey;
 	INPUT.keys['CTRL'] = e.ctrlKey;

@@ -1,0 +1,92 @@
+{
+	"blank": {
+		"name":"blank"
+	},
+	"demo": {
+		"name":"demo",
+		"tile":{
+			"img":"Test 1",
+			"health":0, 
+			"state":0,
+			"walkable":true,
+			"destroyable":false,
+			"decals":[]
+		},
+		"obstruction":{
+			"img":"Obs 1",
+			"health":0, 
+			"state":0,
+			"walkable":true,
+			"destroyable":false,
+			"decals":[]
+		},  
+		"walls": {
+			"top":{
+				"img":"Test 1", 
+				"health":0, 
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			}, 
+			"bottom":{
+				"img":"Test 1", 
+				"health":0, 
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			}, 
+			"left":{
+				"img":"Test 1", 
+				"health":0, 
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			}, 
+			"right":{
+				"img":"Test 1", 
+				"health":0, 
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			}
+		},
+		"corners": {
+			"ul":{
+				"img":"Corner 1",
+				"health":0,
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			},
+			"ll":{
+				"img":"Corner 1",
+				"health":0,
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			},
+			"lr":{
+				"img":"Corner 1",
+				"health":0,
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			},
+			"ur":{
+				"img":"Corner 1",
+				"health":0,
+				"state":0,
+				"walkable":true,
+				"destroyable":false,
+				"decals":[]
+			}
+		}
+	}
+}

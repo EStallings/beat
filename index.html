@@ -1,34 +1,35 @@
-<!-- This is a comment -->
-<!-- Declare the document type and language -->
-<!-- When you see 'G: "something"' this is shorthand for 'Google "something" for more info' -->
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- the head can be used to include scripts, images, stylesheets, etc -->
 <head>
-<title>Demo 1</title>
+<title>Beat</title>
 <style type="text/css">
-	/*G: "CSS Selectors"*/
 	canvas { 
-		/*G: "CSS attributes"*/
-		background-color:blue;
+		background-color:rgba(255,255,255,0);
+		position:absolute;
+		top:0px;
+		left:0px;
 	}
 	body {
 		margin:0px;
 	}
 </style>
-<!-- The HTML equivalent of an include statement. This is the most barebones way of including script files -->
+
 <script type="text/javascript" src="util.js"></script>
+<script type="text/javascript" src="renderFuncs.js"></script>
+<script type="text/javascript" src="ui.js"></script>
+<script type="text/javascript" src="displayManager.js"></script>
+<script type="text/javascript" src="assetManager.js"></script>
+<script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="game.js"></script>
+<script type="text/javascript" src="level.js"></script>
 <script type="text/javascript" src="input.js"></script>
-<script type="text/javascript" src="demo1.js"></script>
+<script type="text/javascript" src="beat.js"></script>
 </head>
 
-<!-- The body of the document is where we put our site content -->
+
 <body oncontextmenu = "return false">
 
-<!-- Our canvas element! -->
-<canvas id='canvas'/>
 </body>
 
 </html>

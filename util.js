@@ -1,4 +1,33 @@
+//General / Math
+
 function rint(n) { return Math.floor(Math.random()*n); }
+function contains(a, e){return a.indexOf(e) != -1; }
+
+//Point -> Rect
+function hpora(x1, y1, x2, y2, w, h) {
+	return (x1 >= x2 && x1 <= x2+w && y1 >= y2 && y1 <= y2+h);
+}
+
+//Point -> Circle
+function hpoca(x1, y1, x2, y2, r) {
+	return ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)) <= (r*r);
+}
+
+//Circle -> Circle
+function hcoca(x1, y1, r1, x2, y2, r2) {
+	return ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)) <= (r1+r2)*(r1+r2);
+}
+
+//Circle -> Rect
+function hcora(x1, y1, r, x2, y2, w, h) {
+	return hpora(x1, y1, x2, y2, w, h) || 
+	hpoca(x2, y2, x1, y1, r) || 
+	hpoca(x2+w, y2, x1, y1, r) ||
+	hpoca(x2, y2+h, x1, y1, r) ||
+	hpoca(x2+w, y2+h, x1, y1, r);
+}
+
+//Graphics related
 function HSVtoRGB(h, s, v) {
 	var r, g, b, i, f, p, q, t;
 	if (h && s === undefined && v === undefined) {
@@ -19,3 +48,28 @@ function HSVtoRGB(h, s, v) {
 	}
 	return "rgb(" + Math.floor(r * 255) + "," + Math.floor(g * 255) + "," + Math.floor(b * 255) + ")";
 }
+
+
+//Data management & networking
+ function loadJSON(callback, src) { 
+ 	var rsp = {};
+ 	rsp.contents = null;
+ 	rsp.status = 'unknown';
+ 	function helper(callback) {
+			var xobj = new XMLHttpRequest();
+					xobj.overrideMimeType("application/json");
+			xobj.open('GET', src, true);
+			xobj.onreadystatechange = function () {
+						if (xobj.readyState == 4 && xobj.status == "200") {
+							// Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+							callback(xobj.responseText);
+						}
+			};
+			xobj.send(null);	
+ 	} 
+ 	helper(function (response) {
+ 		rsp.contents = JSON.parse(response);
+ 		rsp.status = 'done';
+ 		callback(rsp);
+ 	});
+ }

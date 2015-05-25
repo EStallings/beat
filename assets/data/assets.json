@@ -1,0 +1,26 @@
+{
+	"images": {
+		"walls": {
+			"Test 1": "test_wallmap.png",
+			"Test 2": "test_wallmap2.png",
+			"Test 3":"test_wallmap3.png",
+			"Test 4": "test_wallmap4.png",
+			"Test 5": "test_wallmap5.png",
+			"Brick 1": "brick1_wallmap.png"
+
+		},
+		"tiles": {
+			"Test 1": "test_tilemap.png",
+			"Tile 1": "tile1_tilemap.png",
+			"Tile 2": "tile2_tilemap.png",
+			"Tile 3": "tile3_tilemap.png",
+			"Tile 4": "tile4_tilemap.png"
+		},
+		"corners": {
+			"Corner 1": "corner1_tilemap.png"
+		},
+		"obstructions": {
+			"Obs 1": "obs1_tilemap.png"
+		}
+	}
+}
