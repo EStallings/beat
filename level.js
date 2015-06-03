@@ -1,6 +1,10 @@
 function Level(method, args) {
 	this.width = 10;
 	this.height = 10;
+	this.changedWalls = [];
+	this.changedTiles = [];
+	this.changedCorners = [];
+	this.changedObs = [];
 
 	if(method == 'blank') {
 		this.width = args.width;
@@ -20,6 +24,23 @@ function Level(method, args) {
 	this.copyToCell = function(x, y, prefab) {
 		if(this.cells[x][y] && this.cells[x][y].prefab && this.cells[x][y].prefab.name == prefab.name) return;
 		this.cells[x][y] = new Cell(prefab);
+		this.tileChanged(x, y);
+		this.wallChanged(x, y);
+		this.cornerChanged(x, y);
+		this.obsChanged(x, y);
+	}
+
+	this.tileChanged = function(x, y){
+		this.changedTiles.push({x:x, y:y});
+	}
+	this.wallChanged = function(x, y){
+		this.changedWalls.push({x:x, y:y});
+	}
+	this.cornerChanged = function(x, y){
+		this.changedCorners.push({x:x, y:y});
+	}
+	this.obsChanged = function(x, y){
+		this.changedObs.push({x:x, y:y});
 	}
 }
 

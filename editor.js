@@ -104,7 +104,14 @@ EDITOR.setupUI = function(){
 		EDITOR.ui.panels.push(this);
 		this.checkSelect = function(x, y){
 			if(this.contents){
-				var c = this.contents.checkSelect(x, y);
+				var c;
+				if(this.title){
+					c = this.contents.checkSelect(x, y, this.x+5, this.y+30, this.w-10, this.h-35);
+				}
+				else {
+					c = this.contents.checkSelect(x, y, this.x+5, this.y+5, this.w-10, this.h-10);
+				}
+				
 				if(c) return c;
 			}
 			if(!this.movable) return null;
@@ -194,23 +201,20 @@ EDITOR.setupUI = function(){
 		}
 	}
 
-	function Button(){
-
-	}
-
-	EDITOR.ui.menu = new Panel(0, 0, width, 50, null, false);
+	EDITOR.ui.menu = new Panel(0, 0, screenWidth, 50, null, false);
 	EDITOR.ui.toolbox = new Panel(0, 60, 150, 200, 'Toolbox', true);
-	EDITOR.ui.assetBrowser = new Panel(width-200, 60, 200, 500, 'Asset Browser', true);
-	EDITOR.ui.status = new Panel(0, 570, width, 100, 'Status', true);
+	EDITOR.ui.assetBrowser = new Panel(screenWidth-200, 60, 200, 500, 'Asset Browser', true);
+	EDITOR.ui.status = new Panel(0, 570, screenWidth, 100, 'Status', true);
 
 	EDITOR.ui.status.contents = {
-		checkSelect: function(x, y) {
+		checkSelect: function(a, b, x, y, w, h) {
 			return null;
 		},
 		draw: function(gfx, x, y, w, h) {
 			gfx.fillStyle = "#000";
 			gfx.textAlign = 'left';
 			gfx.textBaseline = 'middle';
+			gfx.font = '12px Arial';
 
 			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
 
@@ -227,7 +231,7 @@ EDITOR.setupUI = function(){
 
 			var prefabName = EDITOR.prefab ? EDITOR.prefab.name : "None";
 			var gridPrefabName = "None";
-			if(level.cells[p.x][p.y] && level.cells[p.x][p.y].prefab)
+			if(level.cells[p.x] && level.cells[p.x][p.y] && level.cells[p.x][p.y].prefab)
 				gridPrefabName = level.cells[p.x][p.y].prefab.name;
 			gfx.fillText(prefabName, x + 100, y + 30);
 			gfx.fillText(gridPrefabName, x + 100, y + 40);
@@ -236,11 +240,41 @@ EDITOR.setupUI = function(){
 	}
 
 	EDITOR.ui.assetBrowser.contents = {
-		checkSelect:function(x, y) {
+		fromTop:0,
+		selected:0,
+		checkSelect:function(a, b, x, y, w, h) {
+			var k = 0;
+			var top = y - this.fromTop;
+			for(var i in EDITOR.prefabList){
+				if(hpora(a, b, x, top+k*50, w, 50)){
+					this.selected = k;
+					EDITOR.prefab = EDITOR.prefabList[i];
+					return this;
+				}
+				k++;
+			}
 			return null;
 		},
 		draw: function(gfx, x, y, w, h) {
-			
+			var top = y - this.fromTop;
+			gfx.fillStyle = "#000";
+			gfx.textAlign = 'left';
+			gfx.textBaseline = 'top';
+			var k = 0;
+			for(var i in EDITOR.prefabList) {
+				var p = EDITOR.prefabList[i];
+				gfx.font = "bold 20px Arial";
+				gfx.fillText(p.name, x, top+k*50)
+				displayManager.drawTile(gfx, p, x+w-32, top+k*50);
+
+				k++;
+			}
+
+			gfx.clearRect(x, 0, w, y);
+		},
+		update: function(dx, dy) {
+		},
+		released: function() {
 		}
 	}
 }
@@ -256,7 +290,7 @@ EDITOR.onEnter = function(oldstate) {
 	EDITOR.setupUI();
 	loadJSON(EDITOR._getPrefabListCallback, PREFAB_LIST_LOCATION);
 	//TODO don't do this
-	level = new Level('blank', {width:50, height:40});
+	level = new Level('blank', {width:20, height:20});
 
 }
 
@@ -317,7 +351,63 @@ EDITOR.tools.push({
 	update:function(){
 		if(INPUT.mouse.LMB && EDITOR.prefab){
 			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
 			level.copyToCell(p.x, p.y, EDITOR.prefab);
+		}
+	}
+});
+EDITOR.tools.push({
+	name:'Prefab Floodfill',
+	update:function(){
+		if(INPUT.mouse.LMB && EDITOR.prefab){
+			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
+			var cell = level.cells[p.x][p.y];
+			var name;
+			if(!cell || !cell.prefab) name = '';
+			else if(cell.prefab.name == EDITOR.prefab.name) return;
+			else name = cell.prefab.name;
+
+			var stack = [p];
+			var explored = [];
+			while(stack.length > 0) {
+				var pt = stack.pop();
+				var x = pt.x;
+				var y = pt.y;
+				level.copyToCell(x, y, EDITOR.prefab);
+
+				var test = [];
+				if(x > 0) test.push({x:x-1, y:y});
+				if(x < level.width-1) test.push({x:x+1, y:y});
+				if(y > 0) test.push({x:x, y:y-1});
+				if(y < level.height-1) test.push({x:x, y:y+1});
+
+				for(var i in test) {
+					var nx = test[i].x;
+					var ny = test[i].y;
+					if(!explored[nx] || !explored[nx][ny]){
+						if(name == ''){
+							if(!level.cells[nx][ny] || !level.cells[nx][ny].prefab)
+								stack.push(test[i]);
+						}
+						else if(level.cells[nx][ny].prefab.name == name)
+							stack.push(test[i]);
+					}
+				}
+			}
+			console.log("Done");
+		}
+
+	}
+});
+EDITOR.tools.push({
+	name:'Prefab Eyedropper',
+	update:function(){
+		if(INPUT.mouse.LMB){
+			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+			var cell = level.cells[p.x][p.y]
+			if(!cell || !cell.prefab) return;
+			EDITOR.prefab = cell.prefab;
 		}
 	}
 });

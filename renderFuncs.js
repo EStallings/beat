@@ -1,197 +1,150 @@
 renderFuncs = {};
 renderFuncs['background'] = function() {
-	var gfx = displayManager.gfxs['background'];
-	displayManager.resetCanvas('background');
+	var surface = displayManager.surfaces['background'];
+
 }
+
 renderFuncs['tiles'] = function() {
-	var gfx = displayManager.gfxs['tiles'];
-	displayManager.resetCanvas('tiles');
-	displayManager.adjustCanvas('tiles');
-	//TODO optimize!
-	if(!level) return;
-	for(var i = 0; i < level.width; i++) {
-		for(var j = 0; j < level.height; j++) {
-			var cell = level.cells[i][j];
-			if(!cell) continue;
-			if(!cell.tile) {
-				gfx.fillStyle = gfx.strokeStyle = "#000";
-				gfx.fillText("Blank", i*CELL_SIZE, j*CELL_SIZE + CELL_SIZE/2);
-				gfx.strokeRect(i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
-			}
-			else{
-				var img = assets.images.tiles[cell.tile.img];
-				var sx = cell.tile.health*CELL_SIZE;
-				var sy = cell.tile.state*CELL_SIZE;
-				gfx.drawImage(img, sx, sy, CELL_SIZE, CELL_SIZE, i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
-			}
-		}
-	}
+	var surface = displayManager.surfaces['tiles'];
+	// var data = gfx.getImageData(0,0,width,height);
+	// displayManager.adjustCanvas('tiles');
+	
+	// if(!level){
+	// 	displayManager.resetCanvas('tiles');
+	// 	return;
+	// }
+
+	// gfx.putImageData(data, displayManager.dx, displayManager.dy);
+	// if(level.changedTiles.length >  1) {
+	// 	for(var el in level.changedTiles){
+	// 		var i = level.changedTiles[el].x;
+	// 		var j = level.changedTiles[el].y;
+	// 		var cell = level.cells[i][j];
+	// 		displayManager.drawTile(gfx, cell, i*CELL_SIZE, j*CELL_SIZE);
+	// 	}
+	// 	level.changedTiles = [];
+	// }
+
 }
+
 renderFuncs['walls'] = function() {
-	var gfx = displayManager.gfxs['walls'];
-	displayManager.resetCanvas('walls');
-	gfx.rotate(Math.PI/2)
-	displayManager.resetCanvas('walls');
-	displayManager.adjustCanvas('walls');
-
-	if(!level) return;
-	for(var i = 0; i < level.width; i++) {
-		for(var j = 0; j < level.height; j++) {
-			var cell = level.cells[i][j];
-			if(!cell || !cell.walls) continue;
-			else {
-				if(cell.walls.top){
-					var img1 = assets.images.walls[cell.walls.top.img];
-					var sx1 = cell.walls.top.health*WALL_LENGTH;
-					var sy1 = cell.walls.top.state*WALL_WIDTH;
-					gfx.drawImage(img1, sx1, sy1, WALL_LENGTH, WALL_WIDTH, i*CELL_SIZE, j*CELL_SIZE, WALL_LENGTH, WALL_WIDTH);
-				}
-				if(cell.walls.bottom){
-					var img2 = assets.images.walls[cell.walls.bottom.img];
-					var sx2 = cell.walls.bottom.health*WALL_LENGTH;
-					var sy2 = cell.walls.bottom.state*WALL_WIDTH;
-					gfx.drawImage(img2, sx2, sy2, WALL_LENGTH, WALL_WIDTH, i*CELL_SIZE, j*CELL_SIZE+(CELL_SIZE-WALL_WIDTH), WALL_LENGTH, WALL_WIDTH);
-				}
-			}
-		}
-	}
-	gfx.rotate(Math.PI/2);
-	for(var i = 0; i < level.width; i++) {
-		for(var j = 0; j < level.height; j++) {
-			var cell = level.cells[i][j];
-			if(!cell || !cell.walls) continue;
-			else {
-				if(cell.walls.left){
-					var img1 = assets.images.walls[cell.walls.left.img];
-					var sx1 = cell.walls.left.health*WALL_LENGTH;
-					var sy1 = cell.walls.left.state*WALL_WIDTH;
-					gfx.drawImage(img1, sx1, sy1, WALL_LENGTH, WALL_WIDTH, j*CELL_SIZE, -i*CELL_SIZE-WALL_WIDTH, WALL_LENGTH, WALL_WIDTH);
-				}
-				if(cell.walls.right){
-					var img2 = assets.images.walls[cell.walls.right.img];
-					var sx2 = cell.walls.right.health*WALL_LENGTH;
-					var sy2 = cell.walls.right.state*WALL_WIDTH;
-					gfx.drawImage(img2, sx2, sy2, WALL_LENGTH, WALL_WIDTH, j*CELL_SIZE, -i*CELL_SIZE-(CELL_SIZE-WALL_WIDTH)-WALL_WIDTH, WALL_LENGTH, WALL_WIDTH);
-				}
-			}
-		}
-	}
-	gfx.rotate(-Math.PI/2);
+	// displayManager.adjustCanvas('walls');
+	// if(!level) {
+	// 	displayManager.resetCanvas('walls');
+	// 	return;
+	// }
+	// if(level.changedWalls.length < 1) return;
+	// displayManager.resetCanvas('walls');
+	// var surface = displayManager.surfaces['walls'];
+	// for(var el in level.changedWalls) {
+	// 	var i = level.changedWalls[el].x;
+	// 	var j = level.changedWalls[el].y;
+	// 	var cell = level.cells[i][j];
+	// 	if(!cell || !cell.walls) continue;
+	// 	displayManager.drawHorizWalls(gfx, cell.walls, i*CELL_SIZE, j*CELL_SIZE);
+	// }
+	// gfx.rotate(Math.PI/2);
+	// for(var el in level.changedWalls) {
+	// 	var i = level.changedWalls[el].x;
+	// 	var j = level.changedWalls[el].y;
+	// 	var cell = level.cells[i][j];
+	// 	if(!cell || !cell.walls) continue;
+	// 	displayManager.drawVertWalls(gfx, cell.walls, i*CELL_SIZE, j*CELL_SIZE);
+	// }
+	// gfx.rotate(-Math.PI/2);
 
 }
+
 renderFuncs['obstructions'] = function() {
-	var gfx = displayManager.gfxs['obstructions'];
-	displayManager.resetCanvas('obstructions');
-	displayManager.adjustCanvas('obstructions');
-	//TODO optimize!
-	if(!level) return;
-	for(var i = 0; i < level.width; i++) {
-		for(var j = 0; j < level.height; j++) {
-			var cell = level.cells[i][j];
-			if(!cell || !cell.obstruction) continue;
-			
-			var img = assets.images.obstructions[cell.obstruction.img];
-			var sx = cell.obstruction.health*CELL_SIZE;
-			var sy = cell.obstruction.state*CELL_SIZE;
-			gfx.drawImage(img, sx, sy, CELL_SIZE, CELL_SIZE, i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
-		}
-	}
+	// displayManager.adjustCanvas('obstructions');
+	// if(!level) {
+	// 	displayManager.resetCanvas('obstructions');
+	// 	return;
+	// }
+	// if(level.changedObs.length < 1) return;
+	// displayManager.resetCanvas('obstructions');
+	// var surface = displayManager.surfaces['obstructions'];
+	// for(var el in level.changedWalls) {
+	// 	var i = level.changedWalls[el].x;
+	// 	var j = level.changedWalls[el].y;
+	// 	var cell = level.cells[i][j];
+	// 	if(!cell || !cell.obstruction) continue;
+	// 	displayManager.drawObs(gfx, cell.obstruction, i*CELL_SIZE, j*CELL_SIZE);
+	// }
 }
+
 renderFuncs['corners'] = function() {
-	var gfx = displayManager.gfxs['corners'];
-	displayManager.resetCanvas('corners');
-	displayManager.adjustCanvas('corners');
-	//TODO optimize!
-	if(!level) return;
-	for(var i = 0; i < level.width; i++) {
-		for(var j = 0; j < level.height; j++) {
-			var cell = level.cells[i][j];
-			if(!cell || !cell.corners) continue;
-			
-			if(cell.corners.ul){
-				var img = assets.images.corners[cell.corners.ul.img];
-				var sx = cell.corners.ul.health*WALL_WIDTH;
-				var sy = cell.corners.ul.state*WALL_WIDTH;
-				gfx.drawImage(img, sx, sy, WALL_WIDTH, WALL_WIDTH, i*CELL_SIZE, j*CELL_SIZE, WALL_WIDTH, WALL_WIDTH);
-			}
-			if(cell.corners.ur){
-				var img = assets.images.corners[cell.corners.ur.img];
-				var sx = cell.corners.ur.health*WALL_WIDTH;
-				var sy = cell.corners.ur.state*WALL_WIDTH;
-				gfx.drawImage(img, sx, sy, WALL_WIDTH, WALL_WIDTH, i*CELL_SIZE+(CELL_SIZE-WALL_WIDTH), j*CELL_SIZE, WALL_WIDTH, WALL_WIDTH);
-			}
-
-			if(cell.corners.ll){
-				var img = assets.images.corners[cell.corners.ll.img];
-				var sx = cell.corners.ll.health*WALL_WIDTH;
-				var sy = cell.corners.ll.state*WALL_WIDTH;
-				gfx.drawImage(img, sx, sy, WALL_WIDTH, WALL_WIDTH, i*CELL_SIZE, j*CELL_SIZE+(CELL_SIZE-WALL_WIDTH), WALL_WIDTH, WALL_WIDTH);
-			}
-			if(cell.corners.lr){
-				var img = assets.images.corners[cell.corners.lr.img];
-				var sx = cell.corners.lr.health*WALL_WIDTH;
-				var sy = cell.corners.lr.state*WALL_WIDTH;
-				gfx.drawImage(img, sx, sy, WALL_WIDTH, WALL_WIDTH, i*CELL_SIZE+(CELL_SIZE-WALL_WIDTH), j*CELL_SIZE+(CELL_SIZE-WALL_WIDTH), WALL_WIDTH, WALL_WIDTH);
-			}
-
-
-		}
-	}
+	// displayManager.adjustCanvas('corners');
+	// if(!level) {
+	// 	displayManager.resetCanvas('corners');
+	// 	return;
+	// }
+	// if(level.changedCorners.length < 1) return;
+	// displayManager.resetCanvas('corners');
+	// var surface = displayManager.surfaces['corners'];
+	// for(var el in level.changedWalls) {
+	// 	var i = level.changedWalls[el].x;
+	// 	var j = level.changedWalls[el].y;
+	// 	var cell = level.cells[i][j];
+	// 	if(!cell || !cell.corners) continue;
+		
+	// 	displayManager.drawCorners(gfx, cell.corners, i*CELL_SIZE, j*CELL_SIZE);
+	// }
 }
 renderFuncs['decor'] = function() {
-	var gfx = displayManager.gfxs['decor'];
-	displayManager.resetCanvas('decor');
+	// var surface = displayManager.surfaces['decor'];
+	// surface.reset();
 }
 renderFuncs['bg_entities'] = function() {
-	var gfx = displayManager.gfxs['bg_entities'];
-	displayManager.resetCanvas('bg_entities');
+	// var surface = displayManager.surfaces['bg_entities'];
+	// surface.reset();
 }
 renderFuncs['entities'] = function() {
-	var gfx = displayManager.gfxs['entities'];
-	displayManager.resetCanvas('entities');
+	// var surface = displayManager.surfaces['entities'];
+	// surface.reset();
 }
 renderFuncs['player'] = function() {
-	var gfx = displayManager.gfxs['player'];
-	displayManager.resetCanvas('player');
+	var surface = displayManager.surfaces['player'];
+	surface.reset();
 }
 renderFuncs['bullets'] = function() {
-	var gfx = displayManager.gfxs['bullets'];
-	displayManager.resetCanvas('bullets');
+	// var surface = displayManager.surfaces['bullets'];
+	// surface.reset();
 }
 renderFuncs['pickups'] = function() {
-	var gfx = displayManager.gfxs['pickups'];
-	displayManager.resetCanvas('pickups');
+	// var surface = displayManager.surfaces['pickups'];
+	// surface.reset();
 }
 renderFuncs['particles1'] = function() {
-	var gfx = displayManager.gfxs['particles1'];
-	displayManager.resetCanvas('particles1');
+	// var surface = displayManager.surfaces['particles1'];
+	// surface.reset();
 }
 renderFuncs['particles2'] = function() {
-	var gfx = displayManager.gfxs['particles2'];
-	displayManager.resetCanvas('particles2');
+	// var surface = displayManager.surfaces['particles2'];
+	// surface.reset();
 }
 renderFuncs['particles3'] = function() {
-	var gfx = displayManager.gfxs['particles3'];
-	displayManager.resetCanvas('particles3');
+	// var surface = displayManager.surfaces['particles3'];
+	// surface.reset();
 }
 renderFuncs['effects'] = function() {
-	var gfx = displayManager.gfxs['effects'];
-	displayManager.resetCanvas('effects');
+	// var surface = displayManager.surfaces['effects'];
+	// surface.reset();
 }
 
 renderFuncs['debug3'] = function() {
-	var gfx = displayManager.gfxs['debug3'];
-	displayManager.resetCanvas('debug3');
+	var surface = displayManager.surfaces['debug3'];
+	surface.reset();
 }
 renderFuncs['debug2'] = function() {
-	var gfx = displayManager.gfxs['debug2'];
-	displayManager.resetCanvas('debug2');
+	var surface = displayManager.surfaces['debug2'];
+	surface.reset();
 }
 renderFuncs['debug1'] = function() {
-	var gfx = displayManager.gfxs['debug1'];
-	displayManager.resetCanvas('debug1');
+	var surface = displayManager.surfaces['debug1'];
+	surface.reset();
 }
 renderFuncs['input'] = function() {
-	var gfx = displayManager.gfxs['input'];
-	displayManager.resetCanvas('input');
+	var surface = displayManager.surfaces['input'];
+	surface.reset();
 }
