@@ -1,19 +1,35 @@
 function Level(method, args) {
 	this.width = 10;
 	this.height = 10;
-	this.changedWalls = [];
+	this.changedWallsh = [];
+	this.changedWallsv = [];
 	this.changedTiles = [];
 	this.changedCorners = [];
 	this.changedObs = [];
 
+	this.wallsh = []; //horizontal walls
+	this.wallsv = []; //vertical walls
+	this.tiles = [];
+	this.obs = [];
+	this.corners = [];
+
+
 	if(method == 'blank') {
 		this.width = args.width;
 		this.height = args.height;
-		this.cells = [];
-		for(var i = 0; i < this.width; i++) {
-			this.cells[i] = [];
-			for(var j = 0; j < this.height; j++) {
-				this.cells[i][j] = null;
+		for(var i = 0; i <= this.width; i++) {
+			if(i < this.width) this.tiles[i] = [];
+			if(i < this.width) this.wallsh[i] = [];
+			if(i < this.width) this.obs[i] = [];
+			this.corners[i] = [];
+			this.wallsv[i] = [];
+
+			for(var j = 0; j <= this.height; j++) {
+				if(i < this.width && j < this.height) this.tiles[i][j] = null;
+				if(i < this.width && j < this.height) this.obs[i][j] = null;
+				if(i < this.width)this.wallsh[i][j] = null;
+				this.corners[i][j] = null;
+				if(j < this.height) this.wallsv[i][j] = null;
 			}
 		}
 	}
@@ -21,59 +37,37 @@ function Level(method, args) {
 
 	}
 
-	this.copyToCell = function(x, y, prefab) {
-		if(this.cells[x][y] && this.cells[x][y].prefab && this.cells[x][y].prefab.name == prefab.name) return;
-		this.cells[x][y] = new Cell(prefab);
-		this.tileChanged(x, y);
-		this.wallChanged(x, y);
-		this.cornerChanged(x, y);
-		this.obsChanged(x, y);
+	this.writeTile = function(x, y, tile){
+
+		if(this.tiles[x][y] && tile.name == this.tiles[x][y].name) return;
+		this.tiles[x][y] = Object.create(tile);
+		this.changedTiles.push({x:x,y:y});
+		if(this.wallsh[x][y])
+			this.changedWallsh.push({x:x,y:y});
+		if(this.wallsh[x][y+1])
+			this.changedWallsh.push({x:x,y:y+1});
+		if(this.wallsv[x][y])
+			this.changedWallsv.push({x:x,y:y});
+		if(this.wallsv[x+1][y])
+			this.changedWallsv.push({x:x+1,y:y});
+	}
+	this.writeWallH = function(x, y, wall){
+		if(this.wallsh[x][y] && wall.name == this.wallsh[x][y].name) return;
+		this.wallsh[x][y] = wall;
+		this.changedWallsh.push({x:x,y:y});
+	}
+	this.writeWallV = function(x, y, wall){
+		if(this.wallsv[x][y] && wall.name == this.wallsv[x][y].name) return;
+		this.wallsv[x][y] = wall;
+		this.changedWallsv.push({x:x,y:y});
+	}
+	this.writeObs = function(x, y, obs){
+		this.obs[x][y] = obs;
+		this.changedObs.push({x:x,y:y});
+	}
+	this.writeCorner = function(x, y, corner){
+		this.corners[x][y] = corner;
+		this.changedCorners.push({x:x,y:y});
 	}
 
-	this.tileChanged = function(x, y){
-		this.changedTiles.push({x:x, y:y});
-	}
-	this.wallChanged = function(x, y){
-		this.changedWalls.push({x:x, y:y});
-	}
-	this.cornerChanged = function(x, y){
-		this.changedCorners.push({x:x, y:y});
-	}
-	this.obsChanged = function(x, y){
-		this.changedObs.push({x:x, y:y});
-	}
-}
-
-function Cell(prefab) {
-	this.tile = null;
-	this.walls = {};
-	this.corners = {};
-	this.obstruction = null;
-	this.prefab = null;
-
-	if(prefab) {
-		this.prefab = prefab;
-		if(prefab.tile)
-			this.tile = new CellProperty(prefab.tile);
-		if(prefab.obstruction)
-			this.obstruction = new CellProperty(prefab.obstruction);
-		if(prefab.walls)
-			for(var i in prefab.walls)
-				this.walls[i] = new CellProperty(prefab.walls[i]);
-		if(prefab.corners)
-			for(var i in prefab.corners)
-				this.corners[i] = new CellProperty(prefab.corners[i]);	
-	}
-}
-
-function CellProperty(proto) {
-	this.img = proto.img;
-	this.health = proto.health;
-	this.state = proto.state;
-	this.walkable = proto.walkable;
-	this.destroyable = proto.destroyable; //if health reaches 0, will be deleted.
-	this.decals = [];
-	for(var i in proto.decals){
-		this.decals.push(proto.decals[i]); //a list of strings
-	}
 }

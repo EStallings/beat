@@ -1,26 +1,26 @@
 {
-	"images": {
+	"world": {
 		"walls": {
-			"Test 1": "test_wallmap.png",
-			"Test 2": "test_wallmap2.png",
-			"Test 3":"test_wallmap3.png",
-			"Test 4": "test_wallmap4.png",
-			"Test 5": "test_wallmap5.png",
-			"Brick 1": "brick1_wallmap.png"
+			"Test 1": {"name":"Test 1", "src":"test_wallmap.png", "state":"0", "health":"0"},
+			"Test 2": {"name":"Test 2", "src":"test_wallmap2.png", "state":"0", "health":"0"},
+			"Test 3": {"name":"Test 3", "src":"test_wallmap3.png", "state":"0", "health":"0"},
+			"Test 4": {"name":"Test 4", "src":"test_wallmap4.png", "state":"0", "health":"0"},
+			"Test 5": {"name":"Test 5", "src":"test_wallmap5.png", "state":"0", "health":"0"},
+			"Brick 1": {"name":"Brick 1", "src":"brick1_wallmap.png", "state":"0", "health":"0"}
 
 		},
 		"tiles": {
-			"Test 1": "test_tilemap.png",
-			"Tile 1": "tile1_tilemap.png",
-			"Tile 2": "tile2_tilemap.png",
-			"Tile 3": "tile3_tilemap.png",
-			"Tile 4": "tile4_tilemap.png"
+			"Test 1": {"name":"Test 1", "src":"test_tilemap.png", "state":"0", "health":"0"},
+			"Tile 1": {"name":"Tile 1", "src":"tile1_tilemap.png", "state":"0", "health":"0"},
+			"Tile 2": {"name":"Tile 2", "src":"tile2_tilemap.png", "state":"0", "health":"0"},
+			"Tile 3": {"name":"Tile 3", "src":"tile3_tilemap.png", "state":"0", "health":"0"},
+			"Tile 4": {"name":"Tile 4", "src":"tile4_tilemap.png", "state":"0", "health":"0"}
 		},
 		"corners": {
-			"Corner 1": "corner1_tilemap.png"
+			"Corner 1": {"name":"Corner 1", "src":"corner1_tilemap.png", "state":"0", "health":"0"}
 		},
 		"obstructions": {
-			"Obs 1": "obs1_tilemap.png"
+			"Obs 1": {"name":"Obs 1", "src":"obs1_tilemap.png", "state":"0", "health":"0"}
 		}
 	}
 }

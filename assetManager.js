@@ -30,17 +30,16 @@ function AssetManager() {
 			return;
 		}
 		assets = {};
-		this.loadImages();
+		this.loadWorldAssets();
 	}
 
-	this.loadImages = function() {
-		var imgAssetList = this.assetList.images;
-		assets.images = {};
-		for(var t in imgAssetList) {
-			assets.images[t] = [];
-			var type = imgAssetList[t];
+	this.loadWorldAssets = function() {
+		var worldAssetList = this.assetList.world;
+		assets.world = this.assetList.world;
+		for(var t in worldAssetList) {
+			var type = worldAssetList[t];
 			for(var a in type) {
-				this.loadImage(assets.images[t], "images/" + t + "/" + type[a], a);
+				this.loadImage(type[a], "images/" + t + "/" + type[a].src, 'img');
 			}
 		}
 	}
@@ -61,6 +60,7 @@ function AssetManager() {
 
 	this.loadImage = function(list, src, name){
 		this.assetTracker[src] = false;
+		console.log(list);
 		var img = new Image();
 		img.onload = this.imgLoadSucc(list, img, src, name);
 		img.onerror = this.imgLoadFail(src);

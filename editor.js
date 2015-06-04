@@ -42,6 +42,7 @@ EDITOR.ui.render_p = function(gfx) {
 
 	this.p_changed = false;
 }
+EDITOR.ui.detection = {};
 EDITOR.ui.render_top = function(gfx) {
 	if(this.mouseStart){
 		gfx.strokeStyle = "#000";
@@ -50,12 +51,90 @@ EDITOR.ui.render_top = function(gfx) {
 		gfx.lineTo(this.mouseEndX, this.mouseEndY);
 		gfx.stroke();
 	}
+	gridCoords = displayManager.screenToGridCoordsWithDiff(INPUT.mouse.X, INPUT.mouse.Y);
+	this.detection = gridCoords;
+	switch(this.levelAssetBrowser.contents.view){
+		case 'tiles':
+			gfx.fillStyle = 'rgba(0,0,0,0.5)';
+			gfx.fillRect(gridCoords.x * CELL_SIZE, gridCoords.y * CELL_SIZE, 32, 32);
+			gfx.fillStyle = "#000";
+			gfx.fillText(gridCoords.x + ", " + gridCoords.y, INPUT.mouse.X, INPUT.mouse.Y);
+			gfx.fillStyle = "#f00";
+			gfx.fillText(gridCoords.dx + ", " + gridCoords.dy, INPUT.mouse.X, INPUT.mouse.Y+CELL_SIZE);
+
+		break;
+		case 'walls':
+			gfx.fillStyle = 'rgba(0,0,0,0.5)';
+			gfx.fillRect(gridCoords.x * CELL_SIZE, gridCoords.y * CELL_SIZE, 32, 32);
+			gfx.fillStyle = 'rgba(0,0,255,0.5)';
+			var a = Math.atan2(gridCoords.dy, gridCoords.dx);
+			// console.log(a);
+			if(Math.sin(a) > 0.5){
+				this.detection.top = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE-2, gridCoords.y * CELL_SIZE-2, 36, 4);
+			}
+			if(Math.sin(a) < -0.5){
+				this.detection.bottom = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE-2, gridCoords.y * CELL_SIZE + CELL_SIZE-2, 36, 4);
+			}
+			if(Math.cos(a) > 0.5){
+				this.detection.left = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE-2, gridCoords.y * CELL_SIZE-2, 4, 36);
+			}
+			if(Math.cos(a) < -0.5){
+				this.detection.right = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE + CELL_SIZE-2, gridCoords.y * CELL_SIZE-2, 4, 36);
+			}
+
+			gfx.fillStyle = "#000";
+			gfx.fillText(gridCoords.x + ", " + gridCoords.y, INPUT.mouse.X, INPUT.mouse.Y);
+			gfx.fillStyle = "#f00";
+			gfx.fillText(gridCoords.dx + ", " + gridCoords.dy, INPUT.mouse.X, INPUT.mouse.Y+CELL_SIZE);
+		break;
+		case 'obstructions':
+			gfx.fillStyle = 'rgba(0,0,0,0.5)';
+			gfx.fillRect(gridCoords.x * CELL_SIZE, gridCoords.y * CELL_SIZE, 32, 32);
+			gfx.fillStyle = "#000";
+			gfx.fillText(gridCoords.x + ", " + gridCoords.y, INPUT.mouse.X, INPUT.mouse.Y);
+			gfx.fillStyle = "#f00";
+			gfx.fillText(gridCoords.dx + ", " + gridCoords.dy, INPUT.mouse.X, INPUT.mouse.Y+CELL_SIZE);
+		break;
+		case 'corners':
+			// gfx.fillStyle = 'rgba(0,0,0,0.5)';
+			// gfx.fillRect(gridCoords.x * CELL_SIZE, gridCoords.y * CELL_SIZE, 32, 32);
+			gfx.fillStyle = 'rgba(0,0,255,0.5)';
+			var a = Math.atan2(gridCoords.dy, gridCoords.dx);
+			console.log(a);
+			if(Math.sin(a) > 0.1 && Math.cos(a) < -0.1){
+				this.detection.ur = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE + CELL_SIZE-2, gridCoords.y * CELL_SIZE-2, 4, 4);
+			}
+			if(Math.sin(a) < -0.1 && Math.cos(a) < -0.1){
+				this.detection.lr = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE + CELL_SIZE-2, gridCoords.y * CELL_SIZE + CELL_SIZE-2, 4, 4);
+			}
+			if(Math.sin(a) > 0.1 && Math.cos(a) > 0.1){
+				this.detection.ul = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE-2, gridCoords.y * CELL_SIZE-2, 4, 4);
+			}
+			if(Math.sin(a) < -0.1 && Math.cos(a) > 0.1){
+				this.detection.ll = true;
+				gfx.fillRect(gridCoords.x * CELL_SIZE-2, gridCoords.y * CELL_SIZE + CELL_SIZE-2, 4, 4);
+			}
+
+			gfx.fillStyle = "#000";
+			gfx.fillText(gridCoords.x + ", " + gridCoords.y, INPUT.mouse.X, INPUT.mouse.Y);
+			gfx.fillStyle = "#f00";
+			gfx.fillText(gridCoords.dx + ", " + gridCoords.dy, INPUT.mouse.X, INPUT.mouse.Y+CELL_SIZE);
+		break;
+	}
 	this.top_changed = false;
 }
 EDITOR.ui.update = function() {
 	var mx = INPUT.mouse.X;
 	var my = INPUT.mouse.Y;
 	this.top_changed = true;
+	this.m_changed = true;
 	this.hitUI = false;
 	if(INPUT.mouse.LMB){
 		if(!this.mouseStart){
@@ -84,6 +163,43 @@ EDITOR.ui.update = function() {
 			this.activeElement.released();
 		}
 		this.activeElement = null;
+	}
+
+	//Asset Browser
+	if(INPUT.keys.PGUP) {
+		EDITOR.ui.levelAssetBrowser.contents.fromTop -= 3;
+	}
+	if(INPUT.keys.PGDOWN) {
+		EDITOR.ui.levelAssetBrowser.contents.fromTop += 3;
+	}
+	if(INPUT.keys['1']) {
+		EDITOR.ui.levelAssetBrowser.contents.view = 'tiles';
+	}
+	if(INPUT.keys['2']) {
+		EDITOR.ui.levelAssetBrowser.contents.view = 'walls';
+	}
+	if(INPUT.keys['3']) {
+		EDITOR.ui.levelAssetBrowser.contents.view = 'obstructions';
+	}
+	if(INPUT.keys['4']) {
+		EDITOR.ui.levelAssetBrowser.contents.view = 'corners';
+	}
+
+	//Tools
+	if(INPUT.keys.Q) {
+		EDITOR.tool = EDITOR.tools[0];
+	}
+	if(INPUT.keys.W) {
+		EDITOR.tool = EDITOR.tools[1];
+	}
+	if(INPUT.keys.E) {
+		EDITOR.tool = EDITOR.tools[2];
+	}
+	if(INPUT.keys.R) {
+		EDITOR.tool = EDITOR.tools[3];
+	}
+	if(INPUT.keys.T) {
+		EDITOR.tool = EDITOR.tools[4];
 	}
 }
 
@@ -203,7 +319,7 @@ EDITOR.setupUI = function(){
 
 	EDITOR.ui.menu = new Panel(0, 0, screenWidth, 50, null, false);
 	EDITOR.ui.toolbox = new Panel(0, 60, 150, 200, 'Toolbox', true);
-	EDITOR.ui.assetBrowser = new Panel(screenWidth-200, 60, 200, 500, 'Asset Browser', true);
+	EDITOR.ui.levelAssetBrowser = new Panel(screenWidth-200, 60, 200, 500, 'Asset Browser', true);
 	EDITOR.ui.status = new Panel(0, 570, screenWidth, 100, 'Status', true);
 
 	EDITOR.ui.status.contents = {
@@ -221,34 +337,27 @@ EDITOR.setupUI = function(){
 			gfx.fillText("Mouse:", x, y+5);
 			gfx.fillText("Grid:", x, y+15);
 
-			gfx.fillText("Prefab:", x, y+30);
-			gfx.fillText("Grid:", x, y+40);
+			gfx.fillText("Wall:", x, y+30);
+			gfx.fillText("Tile:", x, y+40);
 
 			gfx.textAlign = 'right';
 
 			gfx.fillText(INPUT.mouse.X + ", " + INPUT.mouse.Y, x + 100, y+5);
 			gfx.fillText(p.x + ", " + p.y, x + 100, y+15);
-
-			var prefabName = EDITOR.prefab ? EDITOR.prefab.name : "None";
-			var gridPrefabName = "None";
-			if(level.cells[p.x] && level.cells[p.x][p.y] && level.cells[p.x][p.y].prefab)
-				gridPrefabName = level.cells[p.x][p.y].prefab.name;
-			gfx.fillText(prefabName, x + 100, y + 30);
-			gfx.fillText(gridPrefabName, x + 100, y + 40);
-
 		}
 	}
 
-	EDITOR.ui.assetBrowser.contents = {
+	EDITOR.ui.levelAssetBrowser.contents = {
 		fromTop:0,
 		selected:0,
+		view: 'tiles',
 		checkSelect:function(a, b, x, y, w, h) {
 			var k = 0;
 			var top = y - this.fromTop;
-			for(var i in EDITOR.prefabList){
+			for(var i in assets.world[this.view]) {
 				if(hpora(a, b, x, top+k*50, w, 50)){
 					this.selected = k;
-					EDITOR.prefab = EDITOR.prefabList[i];
+					EDITOR.selectedLevelAsset[this.view] = assets.world[this.view][i];
 					return this;
 				}
 				k++;
@@ -257,16 +366,19 @@ EDITOR.setupUI = function(){
 		},
 		draw: function(gfx, x, y, w, h) {
 			var top = y - this.fromTop;
-			gfx.fillStyle = "#000";
 			gfx.textAlign = 'left';
 			gfx.textBaseline = 'top';
 			var k = 0;
-			for(var i in EDITOR.prefabList) {
-				var p = EDITOR.prefabList[i];
+			for(var i in assets.world[this.view]) {
+				var p = assets.world[this.view][i].img;
 				gfx.font = "bold 20px Arial";
-				gfx.fillText(p.name, x, top+k*50)
-				displayManager.drawTile(gfx, p, x+w-32, top+k*50);
-
+				if(assets.world[this.view][i] == EDITOR.selectedLevelAsset[this.view]){
+					gfx.fillStyle = "#666";
+					gfx.fillRect(x, top+k*50, w, 50);
+				}
+				gfx.fillStyle = "#000";
+				gfx.fillText(i, x, top+k*50);
+				gfx.drawImage(p, 0, 0, CELL_SIZE, CELL_SIZE, x+w-32, top+k*50, CELL_SIZE, CELL_SIZE);
 				k++;
 			}
 
@@ -279,18 +391,14 @@ EDITOR.setupUI = function(){
 	}
 }
 
-EDITOR._getPrefabListCallback = function(rsp) {
-	EDITOR.prefabList = rsp.contents;
-	EDITOR.prefabListLoaded = true;
-}
 
 //Core functions
 EDITOR.onEnter = function(oldstate) { 
 	console.log("Begin EDITOR");
 	EDITOR.setupUI();
-	loadJSON(EDITOR._getPrefabListCallback, PREFAB_LIST_LOCATION);
+
 	//TODO don't do this
-	level = new Level('blank', {width:20, height:20});
+	level = new Level('blank', {width:512, height:512});
 
 }
 
@@ -343,71 +451,108 @@ EDITOR.update = function(dt) {
 	}
 }
 
-EDITOR.prefab = null;
+EDITOR.selectedLevelAsset = {tiles:null, walls:null, obstructions:null, corners:null};
 
 EDITOR.tools = [];
 EDITOR.tools.push({
-	name:'Prefab Painter',
+	name:'Pencil',
 	update:function(){
-		if(INPUT.mouse.LMB && EDITOR.prefab){
-			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+		var view = EDITOR.ui.levelAssetBrowser.contents.view;
+		if(INPUT.mouse.LMB && EDITOR.selectedLevelAsset[view]){
+			var p = EDITOR.ui.detection;
 			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
-			level.copyToCell(p.x, p.y, EDITOR.prefab);
-		}
-	}
-});
-EDITOR.tools.push({
-	name:'Prefab Floodfill',
-	update:function(){
-		if(INPUT.mouse.LMB && EDITOR.prefab){
-			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
-			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
-			var cell = level.cells[p.x][p.y];
-			var name;
-			if(!cell || !cell.prefab) name = '';
-			else if(cell.prefab.name == EDITOR.prefab.name) return;
-			else name = cell.prefab.name;
-
-			var stack = [p];
-			var explored = [];
-			while(stack.length > 0) {
-				var pt = stack.pop();
-				var x = pt.x;
-				var y = pt.y;
-				level.copyToCell(x, y, EDITOR.prefab);
-
-				var test = [];
-				if(x > 0) test.push({x:x-1, y:y});
-				if(x < level.width-1) test.push({x:x+1, y:y});
-				if(y > 0) test.push({x:x, y:y-1});
-				if(y < level.height-1) test.push({x:x, y:y+1});
-
-				for(var i in test) {
-					var nx = test[i].x;
-					var ny = test[i].y;
-					if(!explored[nx] || !explored[nx][ny]){
-						if(name == ''){
-							if(!level.cells[nx][ny] || !level.cells[nx][ny].prefab)
-								stack.push(test[i]);
-						}
-						else if(level.cells[nx][ny].prefab.name == name)
-							stack.push(test[i]);
+			switch(view){
+				case 'tiles':
+					level.writeTile(p.x, p.y, EDITOR.selectedLevelAsset.tiles);
+				break;
+				case 'walls':
+					if(p.top) {
+						level.writeWallH(p.x, p.y, EDITOR.selectedLevelAsset.walls);
 					}
-				}
-			}
-			console.log("Done");
+					if(p.bottom) {
+						level.writeWallH(p.x, p.y+1, EDITOR.selectedLevelAsset.walls);
+					}
+					if(p.left) {
+						level.writeWallV(p.x, p.y, EDITOR.selectedLevelAsset.walls);
+					}
+					if(p.right) {
+						level.writeWallV(p.x+1, p.y, EDITOR.selectedLevelAsset.walls);
+					}
+				break;
+				case 'obstructions':
+				break;
+				case 'corners':
+				break;
+			} 
 		}
+	}
+})
+// EDITOR.tools.push({
+// 	name:'Prefab Painter',
+// 	update:function(){
+// 		if(INPUT.mouse.LMB && EDITOR.prefab){
+// 			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+// 			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
+// 			level.copyToCell(p.x, p.y, EDITOR.prefab);
+// 		}
+// 	}
+// });
+// EDITOR.tools.push({
+// 	name:'Prefab Floodfill',
+// 	update:function(){
+// 		if(INPUT.mouse.LMB && EDITOR.prefab){
+// 			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+// 			if(p.x < 0 || p.x >= level.width || p.y < 0 || p.y >= level.height) return;
+// 			var cell = level.cells[p.x][p.y];
+// 			var name;
+// 			if(!cell || !cell.prefab) name = '';
+// 			else if(cell.prefab.name == EDITOR.prefab.name) return;
+// 			else name = cell.prefab.name;
 
-	}
-});
-EDITOR.tools.push({
-	name:'Prefab Eyedropper',
-	update:function(){
-		if(INPUT.mouse.LMB){
-			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
-			var cell = level.cells[p.x][p.y]
-			if(!cell || !cell.prefab) return;
-			EDITOR.prefab = cell.prefab;
-		}
-	}
-});
+// 			var stack = [p];
+// 			var explored = [];
+// 			var n = 0;
+// 			while(stack.length > 0 && n < 102) {
+// 				var pt = stack.shift();
+// 				var x = pt.x;
+// 				var y = pt.y;
+// 				n++;
+// 				level.copyToCell(x, y, EDITOR.prefab);
+
+// 				var test = [];
+// 				if(x > 0) test.push({x:x-1, y:y});
+// 				if(x < level.width-1) test.push({x:x+1, y:y});
+// 				if(y > 0) test.push({x:x, y:y-1});
+// 				if(y < level.height-1) test.push({x:x, y:y+1});
+
+// 				for(var i in test) {
+// 					var nx = test[i].x;
+// 					var ny = test[i].y;
+// 					if(!explored[nx] || !explored[nx][ny]){
+// 						if(name == ''){
+// 							if(!level.cells[nx][ny] || !level.cells[nx][ny].prefab)
+// 								stack.push(test[i]);
+// 						}
+// 						else if(level.cells[nx][ny].prefab.name == name)
+// 							stack.push(test[i]);
+// 					}
+// 				}
+// 			}
+// 			console.log("Done");
+// 		}
+
+// 	}
+// });
+// EDITOR.tools.push({
+// 	name:'Prefab Eyedropper',
+// 	update:function(){
+// 		if(INPUT.mouse.LMB){
+// 			var p = displayManager.screenToGridCoords(INPUT.mouse.X, INPUT.mouse.Y);
+// 			var cell = level.cells[p.x][p.y]
+// 			if(!cell || !cell.prefab) return;
+// 			EDITOR.prefab = cell.prefab;
+// 		}
+// 	}
+// });
+
+EDITOR.tool = EDITOR.tools[0];

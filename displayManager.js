@@ -1,35 +1,43 @@
-function RenderSurface(id, _width, _height) {
-	this.width = _width;
-	this.height = _height;
-	this.masterCopy = document.createElement('canvas');
-	this.masterGfx = this.masterCopy.getContext('2d');
+function RenderSurface(id, needsMaster) {
+	this.canvas = document.createElement('canvas');
+	this.gfx = this.canvas.getContext('2d');
 
-	this.renderCopy = document.createElement('canvas');
-	this.renderGfx = this.renderCopy.getContext('2d');
-	document.body.appendChild(this.renderCopy);
-	this.renderCopy.width = screenWidth;
-	this.renderCopy.height = screenHeight;
+	document.body.appendChild(this.canvas);
+	this.canvas.width = screenWidth;
+	this.canvas.height = screenHeight;
+
+	if(needsMaster){
+		this.masterCanvas = document.createElement('canvas');
+		this.masterGfx = this.masterCanvas.getContext('2d');
+		this.masterCanvas.width = 16384; //32 * 512
+		this.masterCanvas.height = 16384;
+	}
 	
 	this.visible = true;
 	this.id = id;
 
-	this.reset = function(){
-		this.masterGfx.clearRect(0,0,this.width,this.height);
-		this.renderGfx.clearRect(0,0,screenWidth,screenHeight);
+	this.reset = function() {
+		this.gfx.clearRect(0,0,screenWidth,screenHeight);
 	}
 
-	this.adjustCanvas = function(offsetX, offsetY){
-		this.renderGfx.clearRect(0,0,screenWidth, screenHeight);
-		var data = this.masterGfx.getImageData(offsetX, offsetY, screenWidth, screenHeight);
-		this.renderGfx.putImageData(data, 0, 0);
+	this.adjust = function(scale, offsetX, offsetY) {
+		this.gfx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+	}
+
+	this.show = function() {
+		this.visible = true;
+		this.canvas.style.opacity = "1";
+	}
+
+	this.hide = function() {
+		this.visible = false;
+		this.canvas.style.opacity = "0";
 	}
 }
 
 function DisplayManager() {
 	screenWidth = window.innerWidth;
 	screenHeight = window.innerHeight;
-	masterWidth = 32*50;
-	masterHeight = 32*50;
 	
 	this.offsetX = 0;
 	this.offsetY = 0;
@@ -57,58 +65,18 @@ function DisplayManager() {
 	}
 
 	this.screenToGridCoords = function(x, y){
-		gx = Math.floor((x - this.offsetX)/(CELL_SIZE*this.scale));
-		gy = Math.floor((y - this.offsetY)/(CELL_SIZE*this.scale));
+		var gx = Math.floor((x - this.offsetX)/(CELL_SIZE*this.scale));
+		var gy = Math.floor((y - this.offsetY)/(CELL_SIZE*this.scale));
 		return {x:gx, y:gy};
 	}
 
-	this.drawTile = function(gfx, cell, x, y) {
-		if(!cell) {
-			gfx.clearRect(x,  y, CELL_SIZE, CELL_SIZE);
-			return;
-		} 
-		if(!cell.tile) {
-			gfx.fillStyle = gfx.strokeStyle = "#000";
-			gfx.font = '12px Arial';
-			gfx.fillText("Blank", x, y + CELL_SIZE/2);
-			gfx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
-		}
-		else{
-			var img = assets.images.tiles[cell.tile.img];
-			var sx = cell.tile.health*CELL_SIZE;
-			var sy = cell.tile.state*CELL_SIZE;
-			gfx.drawImage(img, sx, sy, CELL_SIZE, CELL_SIZE, x, y, CELL_SIZE, CELL_SIZE);
-		}
-	}
-
-	this.drawHorizWalls = function(gfx, walls, x, y) {
-		if(walls.top){
-			var img1 = assets.images.walls[walls.top.img];
-			var sx1 = walls.top.health*WALL_LENGTH;
-			var sy1 = walls.top.state*WALL_WIDTH;
-			gfx.drawImage(img1, sx1, sy1, WALL_LENGTH, WALL_WIDTH, x, y, WALL_LENGTH, WALL_WIDTH);
-		}
-		if(walls.bottom){
-			var img2 = assets.images.walls[walls.bottom.img];
-			var sx2 = walls.bottom.health*WALL_LENGTH;
-			var sy2 = walls.bottom.state*WALL_WIDTH;
-			gfx.drawImage(img2, sx2, sy2, WALL_LENGTH, WALL_WIDTH, x, y+(CELL_SIZE-WALL_WIDTH), WALL_LENGTH, WALL_WIDTH);
-		}
-	}
-
-	this.drawVertWalls = function(gfx, walls, x, y) {
-		if(walls.left){
-			var img1 = assets.images.walls[walls.left.img];
-			var sx1 = walls.left.health*WALL_LENGTH;
-			var sy1 = walls.left.state*WALL_WIDTH;
-			gfx.drawImage(img1, sx1, sy1, WALL_LENGTH, WALL_WIDTH, y, -x-WALL_WIDTH, WALL_LENGTH, WALL_WIDTH);
-		}
-		if(walls.right){
-			var img2 = assets.images.walls[walls.right.img];
-			var sx2 = walls.right.health*WALL_LENGTH;
-			var sy2 = walls.right.state*WALL_WIDTH;
-			gfx.drawImage(img2, sx2, sy2, WALL_LENGTH, WALL_WIDTH, y, -x-(CELL_SIZE-WALL_WIDTH)-WALL_WIDTH, WALL_LENGTH, WALL_WIDTH);
-		}
+	this.screenToGridCoordsWithDiff = function(x, y){
+		var cs = CELL_SIZE*this.scale;
+		var gx = Math.floor((x - this.offsetX)/cs);
+		var gy = Math.floor((y - this.offsetY)/cs);
+		var cx = (gx*cs)+cs/2+this.offsetX;
+		var cy = (gy*cs)+cs/2+this.offsetY;
+		return {x:gx, y:gy, dx:cx-x, dy:cy-y};
 	}
 
 	this.drawObs = function(gfx, obs, x, y) {
@@ -146,28 +114,28 @@ function DisplayManager() {
 		}
 	}
 
-	this.surfaces['background'] = new RenderSurface('background', masterWidth, masterHeight);
-	this.surfaces['tiles'] = new RenderSurface('tiles', masterWidth, masterHeight);
-	this.surfaces['walls'] = new RenderSurface('walls', masterWidth, masterHeight);
-	this.surfaces['obstructions'] = new RenderSurface('obstructions', masterWidth, masterHeight);
-	this.surfaces['corners'] = new RenderSurface('corners', masterWidth, masterHeight);
-	this.surfaces['decor'] = new RenderSurface('decor', masterWidth, masterHeight);
-	this.surfaces['bg_entities'] = new RenderSurface('bg_entities', masterWidth, masterHeight);
-	this.surfaces['entities'] = new RenderSurface('entities', masterWidth, masterHeight);
-	this.surfaces['player'] = new RenderSurface('player', masterWidth, masterHeight);
-	this.surfaces['bullets'] = new RenderSurface('bullets', masterWidth, masterHeight);
-	this.surfaces['pickups'] = new RenderSurface('pickups', masterWidth, masterHeight);
-	this.surfaces['particles1'] = new RenderSurface('particles1', masterWidth, masterHeight);
-	this.surfaces['particles2'] = new RenderSurface('particles2', masterWidth, masterHeight);
-	this.surfaces['particles3'] = new RenderSurface('particles3', masterWidth, masterHeight);
-	this.surfaces['effects'] = new RenderSurface('effects', masterWidth, masterHeight);
-	this.surfaces['bg_ui'] = new RenderSurface('bg_ui', masterWidth, masterHeight);
-	this.surfaces['m_ui'] = new RenderSurface('m_ui', masterWidth, masterHeight);
-	this.surfaces['p_ui'] = new RenderSurface('p_ui', masterWidth, masterHeight);
-	this.surfaces['top_ui'] = new RenderSurface('top_ui', masterWidth, masterHeight);
-	this.surfaces['debug3'] = new RenderSurface('debug3', masterWidth, masterHeight);
-	this.surfaces['debug2'] = new RenderSurface('debug2', masterWidth, masterHeight);
-	this.surfaces['debug1'] = new RenderSurface('debug1', masterWidth, masterHeight);
-	this.surfaces['input'] = new RenderSurface('input', masterWidth, masterHeight);
+	this.surfaces['background'] = new RenderSurface('background');
+	this.surfaces['tiles'] = new RenderSurface('tiles', true);
+	this.surfaces['walls'] = new RenderSurface('walls', true);
+
+	this.surfaces['corners'] = new RenderSurface('corners');
+	this.surfaces['decor'] = new RenderSurface('decor');
+
+	this.surfaces['bg_entities'] = new RenderSurface('bg_entities');
+	this.surfaces['entities'] = new RenderSurface('entities');
+	this.surfaces['player'] = new RenderSurface('player');
+	this.surfaces['bullets'] = new RenderSurface('bullets');
+	this.surfaces['pickups'] = new RenderSurface('pickups');
+	this.surfaces['particles1'] = new RenderSurface('particles1');
+	this.surfaces['particles2'] = new RenderSurface('particles2');
+	this.surfaces['particles3'] = new RenderSurface('particles3');
+	this.surfaces['effects'] = new RenderSurface('effects');
+	this.surfaces['bg_ui'] = new RenderSurface('bg_ui');
+	this.surfaces['m_ui'] = new RenderSurface('m_ui');
+	this.surfaces['p_ui'] = new RenderSurface('p_ui');
+	this.surfaces['top_ui'] = new RenderSurface('top_ui');
+	this.surfaces['debug3'] = new RenderSurface('debug3');
+	this.surfaces['debug2'] = new RenderSurface('debug2');
+	this.surfaces['debug1'] = new RenderSurface('debug1');
 }
 

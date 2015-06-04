@@ -1,3 +1,4 @@
+
 renderFuncs = {};
 renderFuncs['background'] = function() {
 	var surface = displayManager.surfaces['background'];
@@ -6,54 +7,87 @@ renderFuncs['background'] = function() {
 
 renderFuncs['tiles'] = function() {
 	var surface = displayManager.surfaces['tiles'];
-	// var data = gfx.getImageData(0,0,width,height);
-	// displayManager.adjustCanvas('tiles');
-	
-	// if(!level){
-	// 	displayManager.resetCanvas('tiles');
-	// 	return;
-	// }
+	var gfx = surface.gfx;
+	var masterGfx = surface.masterGfx;
 
-	// gfx.putImageData(data, displayManager.dx, displayManager.dy);
-	// if(level.changedTiles.length >  1) {
-	// 	for(var el in level.changedTiles){
-	// 		var i = level.changedTiles[el].x;
-	// 		var j = level.changedTiles[el].y;
-	// 		var cell = level.cells[i][j];
-	// 		displayManager.drawTile(gfx, cell, i*CELL_SIZE, j*CELL_SIZE);
-	// 	}
-	// 	level.changedTiles = [];
-	// }
+	surface.adjust();
+	
+	if(!level){
+		surface.reset();
+		return;
+	}
+
+	if(level.changedTiles.length >  0) {
+		for(var el in level.changedTiles){
+			var i = level.changedTiles[el].x;
+			var j = level.changedTiles[el].y;
+			var tile = level.tiles[i][j];
+			if(!tile) {
+				masterGfx.clearRect(x,  y, CELL_SIZE, CELL_SIZE);
+				// masterGfx.fillStyle = masterGfx.strokeStyle = "#000";
+				// masterGfx.font = '12px Arial';
+				// masterGfx.fillText("Blank", x, y + CELL_SIZE/2);
+				// masterGfx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+			}
+			else{
+				var img = tile.img;
+				var sx = tile.health*CELL_SIZE;
+				var sy = tile.state*CELL_SIZE;
+				masterGfx.drawImage(img, sx, sy, CELL_SIZE, CELL_SIZE, i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+			}
+		}
+		level.changedTiles = [];
+	}
+	else if(displayManager.dx == 0 && displayManager.dy == 0) return;
+	// var data = masterGfx.getImageData(-displayManager.offsetX,-displayManager.offsetY,screenWidth,screenHeight);
+	// gfx.putImageData(data, 0, 0);
+	gfx.drawImage(surface.masterCanvas, -displayManager.offsetX, -displayManager.offsetY, screenWidth, screenHeight, 0, 0, screenWidth, screenHeight);
 
 }
 
 renderFuncs['walls'] = function() {
-	// displayManager.adjustCanvas('walls');
-	// if(!level) {
-	// 	displayManager.resetCanvas('walls');
-	// 	return;
-	// }
-	// if(level.changedWalls.length < 1) return;
-	// displayManager.resetCanvas('walls');
-	// var surface = displayManager.surfaces['walls'];
-	// for(var el in level.changedWalls) {
-	// 	var i = level.changedWalls[el].x;
-	// 	var j = level.changedWalls[el].y;
-	// 	var cell = level.cells[i][j];
-	// 	if(!cell || !cell.walls) continue;
-	// 	displayManager.drawHorizWalls(gfx, cell.walls, i*CELL_SIZE, j*CELL_SIZE);
-	// }
-	// gfx.rotate(Math.PI/2);
-	// for(var el in level.changedWalls) {
-	// 	var i = level.changedWalls[el].x;
-	// 	var j = level.changedWalls[el].y;
-	// 	var cell = level.cells[i][j];
-	// 	if(!cell || !cell.walls) continue;
-	// 	displayManager.drawVertWalls(gfx, cell.walls, i*CELL_SIZE, j*CELL_SIZE);
-	// }
-	// gfx.rotate(-Math.PI/2);
+	var surface = displayManager.surfaces['walls'];
+	var gfx = surface.gfx;
+	var masterGfx = surface.masterGfx;
 
+	surface.adjust();
+	
+	if(!level){
+		surface.reset();
+		return;
+	}
+
+	if(level.changedWallsh.length > 0) {
+		for(var el in level.changedWallsh) {
+			var i = level.changedWallsh[el].x;
+			var j = level.changedWallsh[el].y;
+			var wallh = level.wallsh[i][j];
+			var img = wallh.img;
+			var sx = wallh.health*WALL_LENGTH;
+			var sy = wallh.state*WALL_WIDTH;
+			masterGfx.drawImage(img, sx, sy, WALL_LENGTH, WALL_WIDTH, i*CELL_SIZE, j*CELL_SIZE, WALL_LENGTH, WALL_WIDTH);
+		}
+		level.changedWallsh = [];
+	}
+	if(level.changedWallsv.length > 0) {
+		masterGfx.rotate(Math.PI/2);
+		for(var el in level.changedWallsv) {
+			var i = level.changedWallsv[el].x;
+			var j = level.changedWallsv[el].y;
+			var wallv = level.wallsv[i][j];
+			var img = wallv.img;
+			var sx = wallv.health*WALL_LENGTH;
+			var sy = wallv.state*WALL_WIDTH;
+			masterGfx.drawImage(img, sx, sy, WALL_LENGTH, WALL_WIDTH, j*CELL_SIZE, -(i*CELL_SIZE)-WALL_WIDTH, WALL_LENGTH, WALL_WIDTH);
+		}
+		level.changedWallsv = [];
+		masterGfx.rotate(-Math.PI/2);
+	}
+	else if(displayManager.dx == 0 && displayManager.dy == 0) return;
+	var data = masterGfx.getImageData(-displayManager.offsetX,-displayManager.offsetY,screenWidth,screenHeight);
+	gfx.putImageData(data, 0, 0);
 }
+
 
 renderFuncs['obstructions'] = function() {
 	// displayManager.adjustCanvas('obstructions');
@@ -104,8 +138,8 @@ renderFuncs['entities'] = function() {
 	// surface.reset();
 }
 renderFuncs['player'] = function() {
-	var surface = displayManager.surfaces['player'];
-	surface.reset();
+	// var surface = displayManager.surfaces['player'];
+	// surface.reset();
 }
 renderFuncs['bullets'] = function() {
 	// var surface = displayManager.surfaces['bullets'];
@@ -133,18 +167,15 @@ renderFuncs['effects'] = function() {
 }
 
 renderFuncs['debug3'] = function() {
-	var surface = displayManager.surfaces['debug3'];
-	surface.reset();
+	// var surface = displayManager.surfaces['debug3'];
+	// surface.reset();
 }
 renderFuncs['debug2'] = function() {
-	var surface = displayManager.surfaces['debug2'];
-	surface.reset();
+	// var surface = displayManager.surfaces['debug2'];
+	// surface.reset();
 }
 renderFuncs['debug1'] = function() {
-	var surface = displayManager.surfaces['debug1'];
-	surface.reset();
+	// var surface = displayManager.surfaces['debug1'];
+	// surface.reset();
 }
-renderFuncs['input'] = function() {
-	var surface = displayManager.surfaces['input'];
-	surface.reset();
-}
+
